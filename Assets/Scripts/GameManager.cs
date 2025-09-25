@@ -8,6 +8,7 @@ public class GameManager : MonoBehaviour
     public float timeLeft;
     public TextMeshProUGUI timerText;
     public TextMeshProUGUI scoreText;
+    public GameObject gameOverScreen;
     public GameObject myPlayer;
     WASDcontroller2D playerScript;
 
@@ -36,6 +37,7 @@ public class GameManager : MonoBehaviour
         {
             //end the game
             Destroy(myPlayer);
+            gameOverScreen.SetActive(true);
             Debug.Log("Game Over!");
 
         }
