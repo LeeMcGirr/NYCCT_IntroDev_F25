@@ -12,10 +12,19 @@ public class WASDcontroller2D : MonoBehaviour
     public bool grounded = false;
     public int destroyedCount = 0;
 
+    public float startTimer = 3f;
+
+
+    [Header("player FX")]
+    public GameObject TrailLeft;
+    public GameObject TrailRight;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         myRB = GetComponent<Rigidbody2D>();
+        TrailLeft = transform.Find("TrailLeft").gameObject;
+        TrailRight = transform.Find("TrailRight").gameObject;
         grounded = false;
         destroyedCount = 0;
     }
@@ -23,14 +32,22 @@ public class WASDcontroller2D : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (Input.GetKeyUp(KeyCode.Space) && grounded)
+        if (startTimer > 0)
         {
-            jumped = true;
+            //code here that runs before the game starts
         }
 
-        if (Input.GetKeyUp(KeyCode.S))
+        if (startTimer < 0)
         {
-            dashed = true;
+            if (Input.GetKeyUp(KeyCode.Space) && grounded)
+            {
+                jumped = true;
+            }
+
+            if (Input.GetKeyUp(KeyCode.S))
+            {
+                dashed = true;
+            }
         }
     }
 
@@ -38,30 +55,59 @@ public class WASDcontroller2D : MonoBehaviour
     void FixedUpdate()
     {
 
+        startTimer -= Time.fixedDeltaTime;
         //let's start with a simple WASD controller
         Vector3 velocity = Vector3.zero;
 
-        if (Input.GetKey(KeyCode.A))
+        if (startTimer > 0)
         {
-            velocity.x = -speed;
-        }
-        if (Input.GetKey(KeyCode.D))
-        {
-            velocity.x = speed;
-        }
-        myRB.AddForce(velocity);
-
-        //when player presses space, jump
-        if (jumped)
-        {
-            Jump();
-            jumped = false;
+            myRB.gravityScale = 0;
         }
 
-        if (dashed)
+        if (startTimer < 0)
         {
-            DownDash();
-            dashed = false;
+            myRB.gravityScale = .6f;
+            if (Input.GetKey(KeyCode.A))
+            {
+                velocity.x = -speed;
+                TrailRight.SetActive(true);
+            }
+            else {
+                TrailRight.SetActive(false);
+            }
+
+            if (Input.GetKey(KeyCode.D))
+            {
+                velocity.x = speed;
+                TrailLeft.SetActive(true);
+            }
+            else {
+                TrailLeft.SetActive(false);
+            }
+
+
+            myRB.AddForce(velocity);
+
+            //scale the player based off the current velocity of the player
+            float xVel = Mathf.Abs(myRB.linearVelocity.x)-1;
+            float yVel = Mathf.Abs(myRB.linearVelocity.y)-1;
+            Vector3 currentVel = new Vector3(xVel, yVel, 1);
+            currentVel = Vector3.ClampMagnitude(currentVel, 20);
+            Debug.Log(currentVel);
+            transform.localScale = (Vector3.one + (currentVel/20f))*.6f;
+
+            //when player presses space, jump
+            if (jumped)
+            {
+                Jump();
+                jumped = false;
+            }
+
+            if (dashed)
+            {
+                DownDash();
+                dashed = false;
+            }
         }
     }
 
